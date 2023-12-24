@@ -57,8 +57,8 @@ class SW:
                 return f"{str(friend.first_name or '')} {str(friend.last_name or '')}".strip()
         return f"Friend #{friendId}"
 
-    def exportToFirefly(self, ff: FireflyIII, exportStartDate="2023-10-01", default_src=None, default_dest=None,
-                        tag=None, firstExport=False):
+    def exportToFirefly(self, ff: FireflyIII, default_src, default_dest,
+                        tag, exportStartDate="2023-10-01", firstExport=False):
         """Massive export of transaction from Splitwise to Firefly III"""
         if tag is None or tag is not list:
             tag = ["Splitwise"]

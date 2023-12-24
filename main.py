@@ -40,8 +40,8 @@ def main():
 
     # Export transactions
     print(f"Exporting transactions to Firefly [FIRST EXPORT: {str(isFirstExport())} - START_DATE: {getLastSplitwiseExport()}]")
-    sw.exportToFirefly(ff, exportStartDate=getLastSplitwiseExport(), default_src=os.getenv("FF_DEFAULT_SRC", "Unclassified_SRC"),
-                       default_dest=os.getenv("FF_DEFAULT_DST", "Unclassified"), tag=getDefaultTags(), firstExport=isFirstExport())
+    sw.exportToFirefly(ff, default_src=os.getenv("FF_DEFAULT_SRC", "Unclassified_SRC"),
+                       default_dest=os.getenv("FF_DEFAULT_DST", "Unclassified"), exportStartDate=getLastSplitwiseExport(), tag=getDefaultTags(), firstExport=isFirstExport())
     # Export liabilities
     # TODO Missing import implementation
     sw.manageLiabilitiesToFirefly(ff)
