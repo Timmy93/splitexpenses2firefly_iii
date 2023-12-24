@@ -10,7 +10,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      DOCKER_TARGET_PLATFORM: linux/arm64
+      DOCKER_TARGET_PLATFORM: linux/arm64,linux/amd64
 
     steps:
     - name: Checkout the code
@@ -28,7 +28,7 @@ jobs:
     - name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
-        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        username: ${{ vars.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
     - name: Run Buildx (push image)
@@ -36,7 +36,7 @@ jobs:
       run: |        
         docker buildx build \
         --platform ${{ env.DOCKER_TARGET_PLATFORM }} \
-        --tag docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPOSITORY }}:$GITHUB_SHA \
-        --tag docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPOSITORY }}:latest \
+        --tag docker.io/${{ vars.DOCKER_HUB_USERNAME }}/${{ vars.DOCKER_HUB_REPOSITORY }}:$GITHUB_SHA \
+        --tag docker.io/${{ vars.DOCKER_HUB_USERNAME }}/${{ vars.DOCKER_HUB_REPOSITORY }}:latest \
         --file ./Dockerfile \
         --output type=image,push=true .
