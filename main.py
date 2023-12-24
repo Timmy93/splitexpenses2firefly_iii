@@ -1,5 +1,8 @@
 import os
+import time
+import schedule
 from FireflyIII import FireflyIII
+from HistoryManager import HistoryManager
 from SW import SW
 
 
@@ -10,20 +13,25 @@ def getDefaultTags() -> list:
     return default_tags
 
 
-def getLastSplitwiseExport() -> str:
-    if isFirstExport():
-        return "2011-01-01"
-    else:
-        # TODO Create a mechanism to evaluate last Firefly export
-        return "2011-01-01"
-
-
-def isFirstExport() -> bool:
-    # TODO Create a mechanism to evaluate if it is the first import
-    return True
+def run_export(ff: FireflyIII, sw: SW, hm:HistoryManager) -> None:
+    # Export transactions
+    hm.loadHistory()
+    print(
+        f"Exporting transactions to Firefly [FIRST EXPORT: {str(hm.isFirstExport())} - START_DATE: {hm.getLastSplitwiseExport()}]")
+    sw.exportToFirefly(ff, default_src=os.getenv("FF_DEFAULT_SRC", "Unclassified_SRC"),
+                       default_dest=os.getenv("FF_DEFAULT_DST", "Unclassified"),
+                       exportStartDate=hm.getLastSplitwiseExport(), tag=getDefaultTags(),
+                       firstExport=hm.isFirstExport())
+    # Export liabilities
+    # TODO Missing import liabilities implementation
+    sw.manageLiabilitiesToFirefly(ff)
+    # Store export
+    hm.storeHistory()
+    print("Export successful")
 
 
 def main():
+    hm = HistoryManager()
     try:
         ff = FireflyIII(os.getenv("FF_URL"), os.getenv("FF_TOKEN"))
         sw = SW(os.getenv("SW_CONSUMER_KEY"), os.getenv("SW_CONSUMER_SECRET"), os.getenv("SW_API_KEY"))
@@ -38,13 +46,14 @@ def main():
         ff.deleteTransactionsThisTag(getDefaultTags())
         print("Deletion completed")
 
-    # Export transactions
-    print(f"Exporting transactions to Firefly [FIRST EXPORT: {str(isFirstExport())} - START_DATE: {getLastSplitwiseExport()}]")
-    sw.exportToFirefly(ff, default_src=os.getenv("FF_DEFAULT_SRC", "Unclassified_SRC"),
-                       default_dest=os.getenv("FF_DEFAULT_DST", "Unclassified"), exportStartDate=getLastSplitwiseExport(), tag=getDefaultTags(), firstExport=isFirstExport())
-    # Export liabilities
-    # TODO Missing import implementation
-    sw.manageLiabilitiesToFirefly(ff)
+    schedule.every().day.do(run_export, ff=ff, sw=sw, hm=hm)
+    print("Scheduled daily export")
+
+    schedule.run_all()
+
+    while True:
+        schedule.run_pending()
+        time.sleep(10)
 
 
 if __name__ == "__main__":

@@ -136,9 +136,9 @@ class SW:
             for debt in debts:
                 if debt.fromUser == self.user.id:
                     print(f"I owe {debt.amount}{debt.currency_code} to {self.getFriendName(debt.toUser)}")
-                    print("Import not implemented")
+                    print("Liabilietes export currently not implemented")
                 elif debt.toUser == self.user.id:
                     print(f"I am owed {debt.amount}{debt.currency_code} by {self.getFriendName(debt.fromUser)}")
-                    print("Import not implemented")
+                    print("Liabilietes export currently not implemented")
                 else:
                     print(f"I am not interested by this debt: {self.getFriendName(debt.fromUser)} owes {debt.amount}{debt.currency_code} by {self.getFriendName(debt.toUser)}")

@@ -7,6 +7,8 @@ Here are listed the currently supported application
 
 ## Missing feature
 The next releases will insert the following feature
- - Keep track of last import
- - Handle multiple user
- - Implement multiple import methods (_currently only owed amount is imported_)
+
+ - [x] Keep track of last import
+ - [X] Implement recurrent run
+ - [ ] Handle multiple user
+ - [ ] Implement multiple import methods (_currently only owed amount is imported_)

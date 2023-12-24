@@ -108,6 +108,7 @@ venv.bak/
 Settings/*.json
 Settings/*.db
 temp/*
+data/*
 
 # Ingore PyCharm config
 .idea
