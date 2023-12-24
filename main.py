@@ -1,9 +1,16 @@
+import logging
 import os
 import time
 import schedule
 from FireflyIII import FireflyIII
 from HistoryManager import HistoryManager
 from SW import SW
+
+logging.basicConfig(
+    filename=os.path.join("data", "sync2ff.log"),
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)-8s %(message)s'
+)
 
 
 def getDefaultTags() -> list:
@@ -13,7 +20,7 @@ def getDefaultTags() -> list:
     return default_tags
 
 
-def run_export(ff: FireflyIII, sw: SW, hm:HistoryManager) -> None:
+def run_export(ff: FireflyIII, sw: SW, hm: HistoryManager) -> None:
     # Export transactions
     hm.loadHistory()
     print(
@@ -28,15 +35,20 @@ def run_export(ff: FireflyIII, sw: SW, hm:HistoryManager) -> None:
     # Store export
     hm.storeHistory()
     print("Export successful")
+    logging.info("Export successful")
 
 
 def main():
+    logging.info("Sync2FF - Started")
+
     hm = HistoryManager()
     try:
         ff = FireflyIII(os.getenv("FF_URL"), os.getenv("FF_TOKEN"))
         sw = SW(os.getenv("SW_CONSUMER_KEY"), os.getenv("SW_CONSUMER_SECRET"), os.getenv("SW_API_KEY"))
+        logging.info("Setup completed")
     except ValueError as e:
         print(f"Please provide required parameters: {e}")
+        logging.warning(f"Missing required parameters: {e}")
         exit(1)
 
     # Evaluate massive deletion of last EXPORT
@@ -45,9 +57,11 @@ def main():
         print("Deleting previous import...")
         ff.deleteTransactionsThisTag(getDefaultTags())
         print("Deletion completed")
+        logging.info("Deletion completed")
 
     schedule.every().day.do(run_export, ff=ff, sw=sw, hm=hm)
     print("Scheduled daily export")
+    logging.info("Scheduled daily export")
 
     schedule.run_all()
 
