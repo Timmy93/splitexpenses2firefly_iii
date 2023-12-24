@@ -1,0 +1,14 @@
+version: "3.7"
+
+services:
+  sync2ff:
+    container_name: sync2ff
+    image: timmy93/splitexpenses2firefly_iii:latest
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - sync2ff_data:/app/data
+
+volumes:
+  sync2ff_data:

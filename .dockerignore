@@ -10,5 +10,6 @@ temp
 
 #Settings
 Settings
+data
 .env
 *.log
