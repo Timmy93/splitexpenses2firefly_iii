@@ -3,8 +3,10 @@ import requests
 
 class FireflyIII:
 
-    def __init__(self, url, token):
+    def __init__(self, url, token, logger):
+        self.logging = logger
         if not url or not token:
+            self.logging.warning('Invalid Firefly III URL or token')
             raise ValueError('Invalid Firefly III URL or token')
         self.url = url
         self.apiVersion = "v1"
@@ -18,7 +20,8 @@ class FireflyIII:
             self.userInfo = self.getCurrentUserInfo()
             self.user_id = self.userInfo['id']
         except requests.exceptions.RequestException as e:
-            print(f"Error during login to Firefly {self.url}: {e}")
+            self.logging.warning(f"Error during login to Firefly {self.url}: {str(e)}")
+            print(f"Error during login to Firefly {self.url}: {str(e)}")
             return None
 
     def getSystemInfo(self):
@@ -70,6 +73,7 @@ class FireflyIII:
             response.raise_for_status()
             return response.json()['data']
         except requests.exceptions.RequestException as e:
+            self.logging.warning(f"Error contacting the API: {str(e)}")
             print(f"Error contacting the API: {e}")
             return None
 
@@ -101,11 +105,11 @@ class FireflyIII:
             api_url = f"{self.url}/api/{self.apiVersion}/transactions/{transaction['id']}"
             response = requests.delete(api_url, headers=self.headers)
             response.raise_for_status()
-            print(
-                f"Deleted this transaction {transaction['attributes']['transactions'][0]['description']}[{transaction['id']}]")
+            self.logging.info(f"Deleted this transaction {transaction['attributes']['transactions'][0]['description']}[{transaction['id']}]")
+            print(f"Deleted this transaction {transaction['attributes']['transactions'][0]['description']}[{transaction['id']}]")
         except requests.exceptions.RequestException as e:
-            print(
-                f"Cannot delete this transaction {transaction['attributes']['transactions'][0]['description']}[{transaction['id']}]: {e}")
+            self.logging.warning(f"Cannot delete this transaction {transaction['attributes']['transactions'][0]['description']}[{transaction['id']}]: {str(e)}")
+            print(f"Cannot delete this transaction {transaction['attributes']['transactions'][0]['description']}[{transaction['id']}]: {e}")
 
     def updateTransaction(self, ff_id: int, date: str, amount: float, description: str, category: str, message: str, tag: list, splitExpense: bool):
         if not splitExpense:
@@ -128,9 +132,11 @@ class FireflyIII:
             response = requests.put(api_url, headers=self.headers, json=data)
             content = response.content
             response.raise_for_status()
+            self.logging.info(f"Transaction successfully updated [ID: {ff_id}]")
             print("Update successful")
             return response.json()['data']
         except requests.exceptions.RequestException as e:
+            self.logging.warning(f"Cannot update this transaction [{ff_id}]: {str(e)}")
             print(f"Cannot update this transaction [{ff_id}]: {e}")
 
     def getRequest(self, api_url):
@@ -139,5 +145,6 @@ class FireflyIII:
             response.raise_for_status()
             return response.json()['data']
         except requests.exceptions.RequestException as e:
+            self.logging.warning(f"Error contacting the API: {str(e)}")
             print(f"Error contacting the API: {e}")
             return None
