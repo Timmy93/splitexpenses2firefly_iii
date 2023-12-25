@@ -44,7 +44,7 @@ def main():
     hm = HistoryManager()
     try:
         ff = FireflyIII(os.getenv("FF_URL"), os.getenv("FF_TOKEN"))
-        sw = SW(os.getenv("SW_CONSUMER_KEY"), os.getenv("SW_CONSUMER_SECRET"), os.getenv("SW_API_KEY"))
+        sw = SW(os.getenv("SW_CONSUMER_KEY"), os.getenv("SW_CONSUMER_SECRET"), os.getenv("SW_API_KEY"), logging.getLogger())
         logging.info("Setup completed")
     except ValueError as e:
         print(f"Please provide required parameters: {e}")

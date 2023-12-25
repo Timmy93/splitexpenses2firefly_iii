@@ -8,8 +8,10 @@ import pytz
 
 class SW:
 
-    def __init__(self, consumerKey, consumerSecret, apiKey):
+    def __init__(self, consumerKey, consumerSecret, apiKey, logger):
+        self.logging = logger
         if not consumerKey or not consumerSecret or not apiKey:
+            self.logging.warning("Invalid Splitwise key or secrets")
             raise ValueError("Invalid Splitwise key or secrets")
         self.sw = Splitwise(consumerKey, consumerSecret, api_key=apiKey)
         self.limit = 20
@@ -66,9 +68,12 @@ class SW:
         while True:
             offset = iteration_num * self.limit
             if firstExport:
+                self.logging.info("Running first massive import from Splitwise")
                 sw_expenses = self.sw.getExpenses(offset=offset, limit=self.limit, dated_after=exportStartDate)
             else:
+                self.logging.info(f"Transaction update as of {exportStartDate}")
                 sw_expenses = self.sw.getExpenses(offset=offset, limit=self.limit, updated_after=exportStartDate)
+            self.logging.info(f"Processing {len(sw_expenses)} transactions")
             for expense in sw_expenses:
                 self.processExpense(ff, expense, default_src, default_dest, tag)
             if len(sw_expenses) <= 0:
@@ -96,6 +101,7 @@ class SW:
                     print(f"FF: {ff_update_date}- SW: {sw_update_date}")
                     if sw_update_date > ff_update_date:
                         # TODO Firefly III BUG
+                        self.logging.info(f"Updating this transaction --> Firefly ID: {ff_transactions[0]['id']} [{sw_update_date.strftime('%Y-%m-%d')}]")
                         ff.updateTransaction(ff_id=ff_transactions[0]['id'],
                                              date=expense.date, amount=float(user.owed_share),
                                              description=expense.description,
@@ -105,9 +111,12 @@ class SW:
                         # No update required
                         print("No update required")
                 elif ff_transactions and isDeleted:
+                    self.logging.info(f"Deleting this transaction --> Firefly ID: {ff_transactions[0]['id']}")
                     ff.deleteTransaction(ff_transactions[0])
                 elif not ff_transactions and not isDeleted:
                     # Inserting new transaction
+                    self.logging.info(
+                        f"Adding new transaction --> Splitwise ID: {str(expense.id)} [{date.year}-{date.month}-{date.day}]")
                     ff.insertTransaction(date=expense.date, amount=float(user.owed_share),
                                          description=expense.description,
                                          category=expense.category.name,
