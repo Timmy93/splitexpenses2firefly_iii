@@ -11,7 +11,7 @@ class FireflyIII:
         self.url = url
         self.apiVersion = "v1"
         self.token = token
-        self.headers = {'Authorization': f'Bearer {token}'}
+        self.headers = {'Authorization': f'Bearer {token}', 'Accept': 'application/json'}
         self.userInfo = None
         self.user_id = None
 
@@ -73,8 +73,13 @@ class FireflyIII:
             response.raise_for_status()
             return response.json()['data']
         except requests.exceptions.RequestException as e:
-            self.logging.warning(f"Error contacting the API: {str(e)}")
-            print(f"Error contacting the API: {e}")
+            try:
+                res = e.response.json()
+                self.logging.warning(f"Error: {str(res['message'])}")
+                print(f"Error: {str(res['message'])}")
+            except:
+                self.logging.warning(f"Error contacting the API: {str(e)}")
+                print(f"Error contacting the API: {e}")
             return None
 
     def listTransactionThisTag(self, tag: str, limit=50, page=1):
